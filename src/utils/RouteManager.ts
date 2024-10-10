@@ -129,7 +129,6 @@ export class RouteManager {
         const r = route ?? this.currentRoute.value
         return r === 'Accounts'
             || r === 'AccountDetails'
-            || r === 'AccountBalances'
             || r === 'AccountsWithKey'
             || r === 'AdminKeyDetails'
     }
@@ -303,6 +302,20 @@ export class RouteManager {
             result = this.router.push(this.makeRouteToCollection(accountId, tokenId))
         }
         return result
+    }
+
+    public makeRouteToTokensByName(name: string): RouteLocationRaw {
+        return {
+            name: 'TokensByName',
+            params: {name: name, network: this.currentNetwork.value}
+        }
+    }
+
+    public makeRouteToTokensByPopularity(name: string): RouteLocationRaw {
+        return {
+            name: 'TokensByPopularity',
+            params: {name: name, network: this.currentNetwork.value}
+        }
     }
 
     //

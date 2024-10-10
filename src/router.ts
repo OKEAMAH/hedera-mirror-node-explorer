@@ -26,6 +26,8 @@ import Accounts from "@/pages/Accounts.vue";
 import AccountDetails from "@/pages/AccountDetails.vue";
 import Tokens from "@/pages/Tokens.vue";
 import TokenDetails from "@/pages/TokenDetails.vue";
+import TokensByName from "@/pages/TokensByName.vue";
+import TokensByPopularity from "@/pages/TokensByPopularity.vue";
 import NftDetails from "@/pages/NftDetails.vue";
 import Contracts from "@/pages/Contracts.vue";
 import ContractDetails from "@/pages/ContractDetails.vue";
@@ -33,7 +35,6 @@ import Topics from "@/pages/Topics.vue";
 import TopicDetails from "@/pages/TopicDetails.vue";
 import SearchHelp from "@/pages/SearchHelp.vue";
 import PageNotFound from "@/pages/PageNotFound.vue";
-import AccountBalances from "@/pages/AccountBalances.vue";
 import {AxiosMonitor} from "@/utils/AxiosMonitor";
 import TransactionsById from "@/pages/TransactionsById.vue";
 import MobileMenu from "@/pages/MobileMenu.vue";
@@ -51,7 +52,6 @@ import AccountsWithKey from "@/pages/AccountsWithKey.vue";
 import AdminKeyDetails from "@/pages/AdminKeyDetails.vue";
 import AddressDetails from "@/pages/AddressDetails.vue";
 import RoutingSpec from "@/pages/RoutingSpec.vue";
-import AccountCollection from "@/pages/AccountCollection.vue"
 import {gtagPageView} from "@/gtag";
 
 const routes: Array<RouteRecordRaw> = [
@@ -133,18 +133,6 @@ const routes: Array<RouteRecordRaw> = [
         props: true
     },
     {
-        path: '/:network/accountbalances/:accountId',
-        name: 'AccountBalances',
-        component: AccountBalances,
-        props: true
-    },
-    {
-        path: '/:network/accountcollection/:accountId/:tokenId',
-        name: 'AccountCollection',
-        component: AccountCollection,
-        props: true
-    },
-    {
         path: '/:network/tokens',
         name: 'Tokens',
         component: Tokens,
@@ -160,6 +148,18 @@ const routes: Array<RouteRecordRaw> = [
         path: '/:network/token/:tokenId/:serialNumber',
         name: 'NftDetails',
         component: NftDetails,
+        props: true
+    },
+    {
+        path: '/:network/tokensByName/:name',
+        name: 'TokensByName',
+        component: TokensByName,
+        props: true
+    },
+    {
+        path: '/:network/tokensByPopularity/:name',
+        name: 'TokensByPopularity',
+        component: TokensByPopularity,
         props: true
     },
     {
@@ -297,9 +297,6 @@ router.beforeEach((to) => {
             break;
         case "AdminKeyDetails":
             document.title = "Hedera Admin Key for Account " + to.params.accountId + titleSuffix
-            break;
-        case "AccountBalances":
-            document.title = "Balances for Hedera Account " + to.params.accountId + titleSuffix
             break;
         case "NodeDetails":
             document.title = "Hedera Node " + to.params.nodeId + titleSuffix

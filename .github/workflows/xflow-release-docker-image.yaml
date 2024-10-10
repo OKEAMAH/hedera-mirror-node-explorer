@@ -25,12 +25,12 @@ env:
 jobs:
   prepare-release:
     name: Release / Prepare
-    runs-on: [ self-hosted, Linux, medium, ephemeral ]
+    runs-on: mirror-node-linux-medium
     outputs:
       version: ${{ steps.extract.outputs.version }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@5c7944e73c4c2a096b17a9cb74d65b6c2bbafbde # v2.9.1
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
         with:
           egress-policy: audit
 
@@ -68,17 +68,17 @@ jobs:
 
   deploy-docker-image:
     name: Deploy / Docker / Image
-    runs-on: [ self-hosted, Linux, medium, ephemeral ]
+    runs-on: mirror-node-linux-medium
     needs:
       - prepare-release
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@5c7944e73c4c2a096b17a9cb74d65b6c2bbafbde # v2.9.1
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
         with:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Install JSON Tools
         run: |         
@@ -115,14 +115,14 @@ jobs:
             tee package.json
 
       - name: Setup NodeJS
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+        uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
         with:
           node-version: 19
           cache: npm
 
       - name: Authenticate to Google Cloud
         id: google-auth
-        uses: google-github-actions/auth@f112390a2df9932162083945e46d439060d66ec2 # v2.1.4
+        uses: google-github-actions/auth@8254fb75a33b976a221574d287e93919e6a36f70 # v2.1.6
         with:
           workload_identity_provider: 'projects/101730247931/locations/global/workloadIdentityPools/hedera-registry-pool/providers/hedera-registry-gh-actions'
           service_account: 'swirlds-automation@hedera-registry.iam.gserviceaccount.com'
@@ -132,7 +132,7 @@ jobs:
         uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
+        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3.7.1
 
       - name: Authorize Docker
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
@@ -148,7 +148,7 @@ jobs:
         run: npm run build
 
       - name: Build and Push Image
-        uses: docker/build-push-action@5cd11c3a4ced054e52742c5fd54dca954e0edd85 # v6.7.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           push: true
           file: Dockerfile

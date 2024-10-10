@@ -26,9 +26,26 @@
 
   <section :class="{'h-mobile-background': isTouchDevice || !isSmallScreen}" class="section">
 
+    <div v-if="temporaryBanner" class="hero is-small mb-5" style="background-color: var(--h-theme-highlight-color);">
+        <div class="hero-body h-is-property-text p-3" v-html="temporaryBanner"/>
+    </div>
+
     <DashboardCard collapsible-key="accountDetails">
       <template v-if="!isInactiveEvmAddress" v-slot:title>
-        <span class="h-is-primary-title">Account </span>
+        <figure
+            v-if="isMyAccount"
+            class="is-flex is-align-items-center"
+            style="height: 40px;"
+        >
+          <img
+              v-if="isMyAccount"
+              :src="walletIconURL ?? undefined"
+              alt="wallet logo"
+              class="mr-3"
+          >
+          <span  class="h-is-primary-title">My Account</span>
+        </figure>
+        <span v-else class="h-is-primary-title">Account</span>
       </template>
       <template v-else v-slot:title>
         <span class="h-is-primary-title">Inactive EVM Address</span>
@@ -39,7 +56,7 @@
           <div class="is-inline-block h-is-property-text has-text-weight-light" style="min-width: 115px">Account ID:</div>
           <Copyable :content-to-copy="normalizedAccountId ?? ''">
             <template v-slot:content>
-              <span>{{ normalizedAccountId ?? "" }}</span>
+              <span :class="{'h-is-secondary-title': isMyAccount}">{{ normalizedAccountId ?? "" }}</span>
             </template>
           </Copyable>
           <span v-if="accountChecksum" class="has-text-grey h-is-smaller">-{{ accountChecksum }}</span>
@@ -108,12 +125,7 @@
         <div class="h-is-property-text">
           <Property id="balance" :full-width="isMediumScreen">
             <template v-slot:name>
-              <span class="h-is-tertiary-text">
-                {{balanceAnalyzer.tokenBalances.value.length > 0 ? 'Balances' : 'Balance'}}
-              </span>
-              <router-link id="show-all-link" :to="{name: 'AccountBalances', params: {accountId: accountId}}">
-                <div class="mt-1 h-is-extra-text">Show all tokens</div>
-              </router-link>
+              <span class="h-is-tertiary-text">Balance</span>
             </template>
             <template v-slot:value>
               <InlineBalancesValue :balance-analyzer="balanceAnalyzer"/>
@@ -234,6 +246,8 @@
       </template>
     </DashboardCard>
 
+    <TokensSection :account-id="normalizedAccountId"/>
+
     <DashboardCard v-if="!isInactiveEvmAddress" collapsible-key="recentTransactions">
       <template v-slot:title>
         <p id="recentTransactions" class="h-is-secondary-title">Recent Operations</p>
@@ -325,7 +339,7 @@ import AccountLink from "@/components/values/link/AccountLink.vue";
 import {AccountLocParser} from "@/utils/parser/AccountLocParser";
 import {ContractByIdCache} from "@/utils/cache/ContractByIdCache";
 import TransactionFilterSelect from "@/components/transaction/TransactionFilterSelect.vue";
-import router, {routeManager} from "@/router";
+import router, {routeManager, walletManager} from "@/router";
 import TransactionLink from "@/components/values/TransactionLink.vue";
 import {StakingRewardsTableController} from "@/components/staking/StakingRewardsTableController";
 import StakingRewardsTable from "@/components/staking/StakingRewardsTable.vue";
@@ -353,12 +367,14 @@ import {NameQuery} from "@/utils/name_service/NameQuery";
 import EntityIOL from "@/components/values/link/EntityIOL.vue";
 import InfoTooltip from "@/components/InfoTooltip.vue";
 import {labelForAutomaticTokenAssociation} from "@/schemas/HederaUtils";
+import TokensSection from "@/components/token/TokensSection.vue";
 
 export default defineComponent({
 
   name: 'AccountDetails',
 
   components: {
+    TokensSection,
     InfoTooltip,
     EntityIOL,
     TransactionDownloadDialog,
@@ -398,6 +414,8 @@ export default defineComponent({
   },
 
   setup(props) {
+    const temporaryBanner = import.meta.env.VITE_APP_TEMPORARY_BANNER ?? null
+
     const isSmallScreen = inject('isSmallScreen', true)
     const isMediumScreen = inject('isMediumScreen', true)
     const isTouchDevice = inject('isTouchDevice', false)
@@ -481,8 +499,8 @@ export default defineComponent({
 
     const tabIds = ['transactions', 'contracts', 'rewards']
     const tabLabels = ['Transactions', 'Created Contracts', 'Staking Rewards']
-    const selectedTab = ref(AppStorage.getAccountOperationTab() ?? tabIds[0])
-    const handleTabUpdate = (tab: string) => {
+    const selectedTab = ref<string|null>(AppStorage.getAccountOperationTab() ?? tabIds[0])
+    const handleTabUpdate = (tab: string|null) => {
       selectedTab.value = tab
       AppStorage.setAccountOperationTab(tab)
     }
@@ -515,7 +533,8 @@ export default defineComponent({
     const verifiedContractsController = new VerifiedContractsController(
         VerifiedContractsByAccountIdCache.instance.makeLookup(accountId),
         perPage,
-        AppStorage.ACCOUNT_OPERATION_TABLE_PAGE_SIZE_KEY)
+        AppStorage.ACCOUNT_OPERATION_TABLE_PAGE_SIZE_KEY
+    )
 
     const rewardsTableController = new StakingRewardsTableController(
         router,
@@ -538,10 +557,16 @@ export default defineComponent({
     onMounted(() => nameQuery.mount())
     onBeforeUnmount(() => nameQuery.unmount())
 
+    const isMyAccount = computed(() => walletManager.connected.value && walletManager.accountId.value === props.accountId)
+    const walletIconURL = computed(() => (isMyAccount.value) ? walletManager.getActiveDriver().iconURL || "" : "")
+
     return {
+      temporaryBanner,
       isSmallScreen,
       isMediumScreen,
       isTouchDevice,
+      isMyAccount,
+      walletIconURL,
       transactionTableController,
       transactionType: transactionTableController.transactionType,
       contractCreateTableController,

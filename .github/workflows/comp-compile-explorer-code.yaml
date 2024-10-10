@@ -47,20 +47,20 @@ env:
 jobs:
   compile:
     name: ${{ inputs.custom-job-label || 'Compiles' }}
-    runs-on: [ self-hosted, Linux, large, ephemeral ]
+    runs-on: mirror-node-linux-large
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@5c7944e73c4c2a096b17a9cb74d65b6c2bbafbde # v2.9.1
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
         with:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
         with:
           fetch-depth: 0
 
       - name: Setup NodeJS
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+        uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
         with:
           node-version: 20
           cache: npm
@@ -101,7 +101,7 @@ jobs:
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
 
       - name: Cypress run
-        uses: cypress-io/github-action@df7484c5ba85def7eef30db301afa688187bc378 # v6.7.2
+        uses: cypress-io/github-action@0da3c06ed8217b912deea9d8ee69630baed1737e # v6.7.6
         if: ${{ inputs.enable-e2e-tests && !cancelled() }}
         with:
           install-command: npm install
@@ -110,7 +110,7 @@ jobs:
           spec: tests/e2e/specs/*
 
       - name: Sonar Analysis
-        uses: sonarsource/sonarcloud-github-action@eb211723266fe8e83102bac7361f0a05c3ac1d1b # v3.0.0
+        uses: sonarsource/sonarcloud-github-action@383f7e52eae3ab0510c3cb0e7d9d150bbaeab838 # v3.1.0
         if: ${{ inputs.enable-sonar-analysis && !cancelled() }}
         env:
           GITHUB_TOKEN: ${{ secrets.access-token }}

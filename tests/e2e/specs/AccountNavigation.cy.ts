@@ -86,27 +86,38 @@ describe('Account Navigation', () => {
         cy.go('back')
         cy.url().should('include', '/mainnet/account/')
 
-        cy.get('#balance')
-            .contains('a', "Show all tokens")
-            .click()
-
-        cy.url().should('include', 'accountbalances/' + accountId1)
-        cy.contains('All Tokens Associated to ' + accountId1)
-
-        cy.get('#balanceCard')
-            .find('table')
+        cy.get('#tab-fungible').click()
+        cy.get('#fungibleTable')
             .find('tbody tr')
+            .should('be.visible')
             .should('have.length.at.least', 2)
             .eq(0)
             .find('td')
             .eq(0)
-            .find('span')
-            .eq(0)
             .click()
             .then(($id) => {
-                cy.log('Selected token Id: ' + $id.text())
-                cy.url().should('include', '/mainnet/token/' + $id.text())
-                cy.contains('Token ID:' + $id.text())
+                        cy.url().should('include', `/mainnet/token/${$id.text()}`)
+                        cy.contains('Fungible Token')
+                        cy.contains(`${$id.text()}`)
+            })
+
+        cy.go('back')
+        cy.url().should('include', '/mainnet/account/')
+
+        cy.get('#tab-nfts').click()
+
+        cy.get('#nftsTable')
+            .find('tbody tr')
+            .should('be.visible')
+            .should('have.length.at.least', 2)
+            .eq(0)
+            .find('td')
+            .eq(1)
+            .click()
+            .then(($id) => {
+                cy.url().should('include', `/mainnet/token/${$id.text()}`)
+                cy.contains('Non Fungible Token')
+                cy.contains(`${$id.text()}`)
             })
     })
 

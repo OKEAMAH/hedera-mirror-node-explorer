@@ -137,6 +137,15 @@ describe("NodeDetails.vue", () => {
         let matcher10 = "/api/v1/accounts/" + SAMPLE_ACCOUNT.account + "/allowances/tokens"
         mock.onGet(matcher10).reply(200, {rewards: []})
 
+        let matcher11 = "/api/v1/accounts/" + SAMPLE_ACCOUNT.account + "/allowances/nfts"
+        mock.onGet(matcher11).reply(200, {nfts: []})
+
+        let matcher12 = "api/v1/tokens"
+        mock.onGet(matcher12).reply(200, { tokens: [] });
+
+        let matcher13 = "api/v1/accounts/" + SAMPLE_ACCOUNT.account + "/nfts"
+        mock.onGet(matcher13).reply(200, { nfts: [] });
+
         const wrapper = mount(AccountDetails, {
             global: {
                 plugins: [router, Oruga]
@@ -149,7 +158,7 @@ describe("NodeDetails.vue", () => {
         // console.log(wrapper.html())
         // console.log(wrapper.text())
 
-        expect(wrapper.text()).toMatch("Account Account ID:" + SAMPLE_ACCOUNT.account)
+        expect(wrapper.text()).toMatch("AccountAccount ID:" + SAMPLE_ACCOUNT.account)
         expect(wrapper.get("#keyValue").text()).toBe(
             "aa2f 7b3e 759f 4531 ec2e 7941 afa4 49e6 a6e6 10ef b52a dae8 9e9c d8e9 d40d dcbf" +
             "Copy" +
@@ -165,6 +174,15 @@ describe("NodeDetails.vue", () => {
         matcher10 = "/api/v1/accounts/" + SAMPLE_ACCOUNT_DUDE.account + "/allowances/tokens"
         mock.onGet(matcher10).reply(200, {rewards: []})
 
+        matcher11 = "/api/v1/accounts/" + SAMPLE_ACCOUNT_DUDE.account + "/allowances/nfts"
+        mock.onGet(matcher11).reply(200, {nfts: []})
+
+        matcher12 = "api/v1/tokens"
+        mock.onGet(matcher12).reply(200, { tokens: [] });
+
+        matcher13 = "api/v1/accounts/" + SAMPLE_ACCOUNT_DUDE.account + "/nfts"
+        mock.onGet(matcher13).reply(200, { nfts: [] });
+
         const token2 = SAMPLE_TOKEN_DUDE
         matcher3 = "/api/v1/tokens/" + token2.token_id
         mock.onGet(matcher3).reply(200, token2);
@@ -179,7 +197,7 @@ describe("NodeDetails.vue", () => {
         // console.log(wrapper.html())
         // console.log(wrapper.text())
 
-        expect(wrapper.text()).toMatch("Account Account ID:" + SAMPLE_ACCOUNT_DUDE.account)
+        expect(wrapper.text()).toMatch("AccountAccount ID:" + SAMPLE_ACCOUNT_DUDE.account)
         expect(wrapper.get("#keyValue").text()).toBe(
             "38f1 ea46 0e95 d97e ea13 aefa c760 eaf9 9015 4b80 a360 8ab0 1d4a 2649 44d6 8746" +
             "Copy" +

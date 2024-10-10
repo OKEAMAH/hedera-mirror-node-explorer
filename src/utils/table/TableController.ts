@@ -49,7 +49,6 @@ export abstract class TableController<R, K> implements PlayPauseController {
     //
 
     public pageSize: Ref<number>
-    public storageKey: string | null
 
     public readonly currentPage: Ref<number> = ref(1)
 
@@ -165,19 +164,19 @@ export abstract class TableController<R, K> implements PlayPauseController {
     public abstract keyFromString(s: string): K | null
 
     public async load(key: K | null, operator: KeyOperator, order: SortOrder, limit: number): Promise<R[] | null> {
-        throw new Error("To be subclassed: key=" + key + ", operator=" + operator + ", limit=" + limit)
+        throw new Error("To be subclassed: key=" + key + ", operator=" + operator + ", order=" + order + ", limit=" + limit)
     }
 
     //
     // Public (utilities)
     //
 
-    public static invertSortOrder(order: SortOrder): string {
+    public static invertSortOrder(order: SortOrder): SortOrder {
         return order == SortOrder.ASC ? SortOrder.DESC : SortOrder.ASC
     }
 
-    public static invertKeyOperator(operator: KeyOperator): string {
-        let result: string
+    public static invertKeyOperator(operator: KeyOperator): KeyOperator {
+        let result: KeyOperator
         switch (operator) {
             case KeyOperator.gt:
                 result = KeyOperator.lt
@@ -215,7 +214,6 @@ export abstract class TableController<R, K> implements PlayPauseController {
     protected constructor(router: Router, pageSize: Ref<number>,
                           presumedRowCount: number, updatePeriod: number,
                           maxUpdateCount: number, maxLimit: number,
-                          storageKey: string | null = null,
                           pageParamName = "p", keyParamName = "k") {
         this.router = router
         this.presumedRowCount = presumedRowCount
@@ -223,7 +221,6 @@ export abstract class TableController<R, K> implements PlayPauseController {
         this.maxAutoUpdateCount = maxUpdateCount
         this.pageSize = pageSize
         this.maxLimit = maxLimit
-        this.storageKey = storageKey
         this.pageParamName = pageParamName
         this.keyParamName = keyParamName
         this.buffer = new RowBuffer<R, K>(this, presumedRowCount);
@@ -382,5 +379,20 @@ export abstract class TableController<R, K> implements PlayPauseController {
 }
 
 export enum KeyOperator { gt = "gt", gte = "gte", lt = "lt", lte = "lte" }
+
+export function getNonStrictOperator(operator: KeyOperator): KeyOperator {
+    let result
+    switch (operator) {
+        case KeyOperator.gt:
+        case KeyOperator.gte:
+            result = KeyOperator.gte
+            break
+        case KeyOperator.lt:
+        case KeyOperator.lte:
+            result = KeyOperator.lte
+            break
+    }
+    return result
+}
 
 export enum SortOrder { ASC = "asc", DESC = "desc" }

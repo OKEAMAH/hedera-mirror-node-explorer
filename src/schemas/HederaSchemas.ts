@@ -125,9 +125,9 @@ export interface NftAllowancesResponse {
 // ---------------------------------------------------------------------------------------------------------------------
 
 export interface BalancesResponse {
-    timestamp: string | null | undefined
-    balances: Array<AccountBalance> | undefined
-    links: Links | undefined
+    timestamp: string | null
+    balances: Array<AccountBalance>
+    links: Links
 }
 
 export interface AccountBalance {
@@ -348,6 +348,11 @@ export interface Token {
     symbol: string
     token_id: string | null
     type: string // FUNGIBLE_COMMON, NON_FUNGIBLE_UNIQUE
+}
+
+export enum TokenType {
+    FUNGIBLE_COMMON = "FUNGIBLE_COMMON",
+    NON_FUNGIBLE_UNIQUE = "NON_FUNGIBLE_UNIQUE"
 }
 
 export interface TokenInfo {

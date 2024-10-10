@@ -24,6 +24,7 @@ import {ref, Ref, watch, WatchStopHandle} from "vue";
 import axios, {AxiosResponse} from "axios";
 import {LocationQuery, Router} from "vue-router";
 import {fetchStringQueryParam} from "@/utils/RouteManager";
+import {drainTransactions} from "@/schemas/HederaUtils";
 
 
 export class TransactionTableControllerXL extends TableController<Transaction, string> {
@@ -39,7 +40,7 @@ export class TransactionTableControllerXL extends TableController<Transaction, s
                        accountId: Ref<string | null>,
                        pageSize: Ref<number>,
                        accountIdMandatory: boolean,
-                       storageKey: string | null = null,
+                       storageKey: string,
                        pageParamName = "p", keyParamName = "k") {
         super(
             router,
@@ -48,16 +49,17 @@ export class TransactionTableControllerXL extends TableController<Transaction, s
             TableController.FAST_REFRESH_PERIOD,
             TableController.FAST_REFRESH_COUNT,
             100,
-            storageKey,
             pageParamName,
             keyParamName
         );
         this.accountId = accountId
         this.accountIdMandatory = accountIdMandatory
+        this.storageKey = storageKey
         this.watchAndReload([this.transactionType, this.accountId, this.pageSize])
     }
 
     public readonly transactionType: Ref<string> = ref("")
+    public storageKey: string
 
     //
     // TableController
@@ -65,10 +67,10 @@ export class TransactionTableControllerXL extends TableController<Transaction, s
 
     public async load(consensusTimestamp: string | null, operator: KeyOperator,
                       order: SortOrder, limit: number): Promise<Transaction[] | null> {
-        let result: Promise<Transaction[] | null>
+        let result: Transaction[] | null
 
         if (this.accountIdMandatory && this.accountId.value === null) {
-            result = Promise.resolve(null)
+            result = null
         } else {
             const params = {} as {
                 limit: number
@@ -88,13 +90,11 @@ export class TransactionTableControllerXL extends TableController<Transaction, s
             if (consensusTimestamp !== null) {
                 params.timestamp = operator + ":" + consensusTimestamp
             }
-            const cb = (r: AxiosResponse<TransactionResponse>): Promise<Transaction[] | null> => {
-                return Promise.resolve(r.data.transactions ?? [])
-            }
-            result = axios.get<TransactionResponse>("api/v1/transactions", {params: params}).then(cb)
+            const r = await axios.get<TransactionResponse>("api/v1/transactions", {params: params})
+            result = await drainTransactions(r.data, limit)
         }
 
-        return result
+        return Promise.resolve(result)
     }
 
     public keyFor(row: Transaction): string {
